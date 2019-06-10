@@ -1,9 +1,21 @@
 ArrayList<Point>point;
+boolean isSelected;
+int selectedNum;
 
 void setup()
 {
-  size(1280,720);
+  size(640,640);
   point = new ArrayList<Point>();
+  String[] input = loadStrings("BezierPoint.txt");
+  for(int i=0; i<input.length; i++)
+  {
+    String[] str = input[i].split(",");
+    float x = float(str[0].substring(1));
+    float y = float(str[1].substring(0,str[1].length()-1));
+    point.add(new Point(x,y));
+  }
+  isSelected = false;
+  selectedNum = -1;
 }
 
 void draw()
@@ -14,6 +26,7 @@ void draw()
   {
     point.get(i).draw(i);
   }
+  changePoint(selectedNum);
   println(point.size());
 }
 
@@ -38,19 +51,82 @@ void drawBezier()
   }
 }
 
+void changePoint(int i)
+{
+  if(isSelected)
+  {
+    //マウスに近い制御点が始点ならば
+    if(i%4==0)
+    {
+      //選んだ制御点が最前列でなければ
+      if(i!=0)
+      {
+        float dis = dist(mouseX,mouseY,point.get(i-1).x,point.get(i-1).y);
+        if(dis <= 50)
+        {
+          point.set(i,point.get(i-1));
+        }else
+        {
+          point.set(i,new Point(mouseX,mouseY));
+        }
+      }else
+      {
+        float dis = dist(mouseX,mouseY,point.get(point.size()-1).x,point.get(point.size()-1).y);
+        if(dis <= 50)
+        {
+          point.set(i,point.get(point.size()-1));
+        }else
+        {
+          point.set(i,new Point(mouseX,mouseY));
+        }
+      }
+    }
+    //マウスに近い制御点が終点ならば
+    else if(i%4==3)
+    {
+      //選んだ制御点が最後列でなければ
+      if(point.size() != i+1)
+      {
+        float dis = dist(mouseX,mouseY,point.get(i+1).x,point.get(i+1).y);
+        if(dis <= 50)
+        {
+          point.set(i,point.get(i+1));
+        }else
+        {
+          point.set(i,new Point(mouseX,mouseY));
+        }
+      }else
+      {
+        float dis = dist(mouseX,mouseY,point.get(0).x,point.get(0).y);
+        if(dis <= 50)
+        {
+          point.set(i,point.get(0));
+        }else
+        {
+          point.set(i,new Point(mouseX,mouseY));
+        }
+      }
+    }
+    else
+    {
+      point.set(i,new Point(mouseX,mouseY));
+    }
+  }
+}
+
 void keyReleased()
 {
   //3次ベジェ曲線追加
   if(key=='p')
   {
     point.add(new Point(mouseX,mouseY));
-    point.add(new Point(mouseX+80,mouseY+20));
+    point.add(new Point(mouseX+80,mouseY-20));
     point.add(new Point(mouseX+120,mouseY+40));
-    point.add(new Point(mouseX+60,mouseY+60));
+    point.add(new Point(mouseX+60,mouseY+80));
     delay(100);
   }
   //制御点の座標を保存
-  if(key=='s')
+  else if(key=='s')
   {
     String[] str = new String[point.size()];
     for(int i=0; i<point.size(); i++)
@@ -59,35 +135,45 @@ void keyReleased()
     }
     saveStrings("BezierPoint.txt",str);
   }
+  //表示されている画面の保存
+  else if(key=='g')
+  {
+    save("Bezier.png");
+  }
+  //制御点の全削除
+  else if(key=='c')
+  {
+    point.clear();
+  }
+  //制御点のラスト削除
+  else if(key=='d')
+  {
+    for(int i=0; i<4 && point.size()!=0; i++)
+    {
+      int last = point.size()-1;
+      point.remove(last);
+    }
+  }
 }
 
 void mouseDragged()
 {
-  for(int i=0; i<point.size();i++)
+  for(int i=0; i<point.size() && !isSelected;i++)
   {
     float distance = dist(mouseX,mouseY,point.get(i).x,point.get(i).y);
+    //マウスと制御点の距離が50以下なら
     if(distance <= 50)
     {
-      point.set(i,new Point(mouseX,mouseY));
-      if(i%4==0 && i!=0)
-      {
-        float dis = dist(mouseX,mouseY,point.get(i-1).x,point.get(i-1).y);
-        if(dis <= 50)
-        {
-          point.set(i-1,new Point(mouseX,mouseY));
-        }
-      }
-      if(i%4==3 && point.size()!=i+1)
-      {
-        float dis = dist(mouseX,mouseY,point.get(i+1).x,point.get(i+1).y);
-        if(dis <= 50)
-        {
-          point.set(i+1,new Point(mouseX,mouseY));
-        }
-      }
-      break;
+      isSelected = true;
+      selectedNum = i;
     }
   }
+}
+
+void mouseReleased()
+{
+  isSelected = false;
+  selectedNum = -1;
 }
 
 class Point
