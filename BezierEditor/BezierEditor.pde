@@ -3,6 +3,9 @@ boolean isSelected;
 boolean smooth;
 boolean hidden;
 int selectedNum;
+int lastSelectedNum;
+int r,g,b;
+String s;
 
 void setup()
 {
@@ -36,6 +39,11 @@ void setup()
   smooth = true;
   hidden = false;
   selectedNum = -1;
+  lastSelectedNum = -1;
+  r = 0;
+  g = 255;
+  b = 255;
+  s = "smooth";
 }
 
 void draw()
@@ -52,9 +60,10 @@ void draw()
   }
   if(frameCount<90)
   {
-    drawText();
+    drawText(s);
   }
   println(point.size()+","+smooth);
+  println("lastSelect="+lastSelectedNum);
 }
 
 void drawBezier()
@@ -71,7 +80,7 @@ void drawBezier()
     y2=point.get(i+1).y;
     y3=point.get(i+2).y;
     y4=point.get(i+3).y;
-    stroke(0, 255, 255);
+    stroke(r, g, b);
     strokeWeight(5);
     fill(255, 255, 255, 0);
     bezier(x1, y1, x2, y2, x3, y3, x4, y4);
@@ -201,148 +210,28 @@ void changePoint(int i)
   }
 }
 
-void drawText()
+void drawText(String s)
 {
-  fill(0);
-  String str = "Off";
-  if(smooth)
+  if(s.equals("smooth"))
   {
-    str = "On";
-  }
-  textSize(30);
-  text("smooth"+str,80,20);
-  textSize(10);
-}
-
-void keyReleased()
-{
-  switch(key)
-  {
-    //3次ベジェ曲線追加
-    case 'a':
-    point.add(new Point(mouseX, mouseY, color(255, 0, 0)));
-    point.add(new Point(mouseX+80, mouseY-20, color(0, 255, 0)));
-    point.add(new Point(mouseX+120, mouseY+40, color(0, 255, 0)));
-    point.add(new Point(mouseX+60, mouseY+80, color(0, 0, 255)));
-    delay(100);
-    break;
-    
-    //制御点の座標を保存
-    case 's':
-    String[] str = new String[point.size()];
-    for (int i=0; i<point.size(); i++)
-    {
-      str[i] = "("+point.get(i).x+","+point.get(i).y+")";
-    }
-    saveStrings("BezierPoint.txt", str);
-    break;
-    
-    //制御点のラスト削除
-    case 'd':
-    for (int i=0; i<4 && point.size()!=0; i++)
-    {
-      int last = point.size()-1;
-      point.remove(last);
-    }
-    break;
-    
-    //連結した曲線が滑らかになるよう自動調整されるかどうか
-    case 'f':
-    smooth = !smooth;
-    frameCount = 0;
-    break;
-    
-    //表示されている画面の保存
-    case 'g':
-    save("Bezier.png");
-    break;
-    
-    //制御点を見えなくする
-    case 'h':
-    hidden = !hidden;
-    break;
-    
-    //制御点の全削除
-    case 'c':
-    point.clear();
-    break;
-  }
-}
-
-void mouseDragged()
-{
-  for (int i=0; i<point.size() && !isSelected; i++)
-  {
-    float distance = dist(mouseX, mouseY, point.get(i).x, point.get(i).y);
-    //マウスと制御点の距離が50以下なら
-    if (distance <= 50)
-    {
-      isSelected = true;
-      selectedNum = i;
-    }
-  }
-}
-
-void mouseReleased()
-{
-  isSelected = false;
-  selectedNum = -1;
-}
-
-class Point
-{
-  int x;
-  int y;
-  int d;
-  color col;
-
-  Point(int x, int y, color col)
-  {
-    this.x = x;
-    this.y = y;
-    this.col = col;
-    this.d = 10;
-  }
-
-  void draw(int i)
-  {
-    int textX = 0;
-    int textY = 0;
-    switch(i%4)
-    {
-      case 0:
-      this.col = color(255,0,0);
-      textX = 10;
-      textY = -10;
-      if(0<i-1 && point.get(i-1).x == x && point.get(i-1).y == y)
-      {
-        this.col = color(0,255,255);
-      }
-      break;
-      case 1:
-      this.col = color(0,255,0);
-      textX = -10;
-      textY = -10;
-      break;
-      case 2:
-      this.col = color(0,255,0);
-      textX = -10;
-      textY = 10;
-      break;
-      case 3:
-      this.col = color(0,0,255);
-      textX = 10;
-      textY = 10;
-      if(i+2<point.size() && point.get(i+1).x == x && point.get(i+1).y == y)
-      {
-        this.col = color(0,255,255);
-      }
-      break;
-    }
-    fill(this.col);
-    noStroke();
-    ellipse(x, y, d, d);
     fill(0);
-    text(i+1,x+textX,y+textY);
+    String str = "Off";
+    if(smooth)
+    {
+      str = "On";
+    }
+    textSize(30);
+    text("smooth"+str,80,20);
+    textSize(10);
+  }
+  if(s.equals("color"))
+  {
+    fill(0);
+    String str = "R:\nG:\nB:";
+    String str2 = r+"\n"+g+"\n"+b;
+    textSize(20);
+    text(str,20,40);
+    text(str2,60,40);
+    textSize(10);
   }
 }
