@@ -61,7 +61,11 @@ void keyReleased()
     frameCount = 0;
     s = "color";
     r += 100;
-    if(255<r)
+    if(r == 300)
+    {
+      r = 255;
+    }
+    else if(255<r)
     {
       r = 0;
     }
@@ -72,7 +76,11 @@ void keyReleased()
     frameCount = 0;
     s = "color";
     g += 100;
-    if(255<g)
+    if(g == 300)
+    {
+      g = 255;
+    }
+    else if(255<g)
     {
       g = 0;
     }
@@ -83,7 +91,11 @@ void keyReleased()
     frameCount = 0;
     s = "color";
     b += 100;
-    if(255<b)
+    if(b == 300)
+    {
+      b = 255;
+    }
+    else if(255<b)
     {
       b = 0;
     }
